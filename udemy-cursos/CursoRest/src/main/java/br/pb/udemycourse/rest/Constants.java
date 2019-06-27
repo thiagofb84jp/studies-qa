@@ -8,5 +8,7 @@ public final class Constants {
 	
 	public static final String API_USERS = "/users/";
 
-	public static final String API_USERS_XML = "/usersXML/";	
+	public static final String API_USERS_XML = "/usersXML/";
+	
+	public static final String API_TEST = "https://restapitest.com";
 }
