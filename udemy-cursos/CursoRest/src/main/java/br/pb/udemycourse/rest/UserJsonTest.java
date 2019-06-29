@@ -94,6 +94,7 @@ public class UserJsonTest {
 			.body("error", is("Usuário inexistente"));
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void deveVerificarListaRaiz() {
 		given()
