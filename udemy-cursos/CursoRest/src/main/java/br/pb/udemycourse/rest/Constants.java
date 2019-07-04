@@ -25,4 +25,10 @@ public final class Constants {
 	public static final String API_UPLOAD = "/upload/";
 	
 	public static final String API_DOWNLOAD = "/download/";
+	
+	public static final String SWAPI_PEOPLE = "https://swapi.co/api/people/";
+	
+	public static final String API_WEATHER = "http://api.openweathermap.org/data/2.5/weather";
+	
+	public static final String API_BASIC_AUTH = "http://restapi.wcaquino.me/basicauth";
 }
