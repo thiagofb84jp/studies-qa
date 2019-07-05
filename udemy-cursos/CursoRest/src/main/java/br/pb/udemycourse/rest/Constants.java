@@ -39,4 +39,8 @@ public final class Constants {
 	public static final String API_BARRIGA_REST_SIGN_IN = "http://barrigarest.wcaquino.me/signin";
 	
 	public static final String API_BARRIGA_REST_ACCOUNTS = "http://barrigarest.wcaquino.me/contas";
+	
+	public static final String SEU_BARRIGA_LOGIN = "http://seubarriga.wcaquino.me/logar";
+	
+	public static final String SEU_BARRIGA_CONTAS = "http://seubarriga.wcaquino.me/contas";
 }

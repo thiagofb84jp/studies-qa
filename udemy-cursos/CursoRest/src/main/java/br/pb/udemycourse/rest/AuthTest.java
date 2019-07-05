@@ -9,6 +9,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import io.restassured.http.ContentType;
+import io.restassured.path.xml.XmlPath;
+import io.restassured.path.xml.XmlPath.CompatibilityMode;
 
 public class AuthTest {
 	
@@ -96,7 +98,7 @@ public class AuthTest {
 		login.put("email", "brunobryancarloseduardopereira@lbrazil.com.br");
 		login.put("senha", "abcd_123");
 		
-		//Receber o token do usu·rio
+		//Receber o token do usu√°rio
 		String token = given()
 						  .log().all()
 						  .body(login)
@@ -123,6 +125,38 @@ public class AuthTest {
 	
 	@Test
 	public void deveAcessarAplicacaoWeb() {
+		//Realizar o login no sistema e extrair o cookie
+		String cookie = given()
+							.log().all()
+							.formParam("email", "brunobryancarloseduardopereira@lbrazil.com.br")
+							.formParam("senha", "abcd_123")
+							.contentType(ContentType.URLENC.withCharset("UTF-8"))
+						.when()
+							.post(Constants.SEU_BARRIGA_LOGIN)
+						.then()
+							.log().all()
+							.statusCode(200)
+							.extract().header("set-cookie")
+						;
 		
+		cookie = cookie.split("=")[1].split(";")[0];
+		System.out.println(cookie);
+		
+		//Obter as contas
+		String body = given()
+						  .log().all()
+						  .cookie("connect.sid", cookie)
+					  .when()
+					  	  .get(Constants.SEU_BARRIGA_CONTAS)
+					  .then()
+					  	  .log().all()
+					  	  .statusCode(200)
+					  	  .body("html.body.table.tbody.tr[0].td[0]", is("Conta 002"))
+					  	  .extract().body().asString()
+			;
+		
+		System.out.println("/****************** Extracting Xpath **************************/");
+		XmlPath xmlPath = new XmlPath(CompatibilityMode.HTML, body);
+		System.out.println(xmlPath.getString("html.body.table.tbody.tr[0].td[0]"));
 	}
 }
