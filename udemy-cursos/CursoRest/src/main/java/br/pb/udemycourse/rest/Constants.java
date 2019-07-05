@@ -31,4 +31,12 @@ public final class Constants {
 	public static final String API_WEATHER = "http://api.openweathermap.org/data/2.5/weather";
 	
 	public static final String API_BASIC_AUTH = "http://restapi.wcaquino.me/basicauth";
+	
+	public static final String API_BASIC_AUTH_WITH_PWD = "http://admin:senha@restapi.wcaquino.me/basicauth";
+	
+	public static final String API_BASIC_AUTH_WITH_PWD2 = "http://restapi.wcaquino.me/basicauth2";
+	
+	public static final String API_BARRIGA_REST_SIGN_IN = "http://barrigarest.wcaquino.me/signin";
+	
+	public static final String API_BARRIGA_REST_ACCOUNTS = "http://barrigarest.wcaquino.me/contas";
 }
