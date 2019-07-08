@@ -72,6 +72,53 @@ public class BarrigaTest extends BasteTest{
 			.post(APILinks.BARRIGA_REST_CONTAS)
 		.then()
 			.statusCode(400)
-			.body("error", is("J� existe uma conta com esse nome!"));
+			.body("error", is("Já existe uma conta com esse nome!"));
+	}
+	
+	@Test
+	public void deveInserirMovimentacaoComSucesso() {
+		Movimentacao mov = new Movimentacao();
+		mov.setConta_id(21526);
+//		mov.setUsuarioId(usuarioId);
+		mov.setDescricao("Descricao da movimentacao");
+		mov.setEnvolvido("Envolvido na mov");
+		mov.setTipo("REC");
+		mov.setData_transacao("01/01/2000");
+		mov.setData_pagamento("10/05/2010");
+		mov.setValor(100f);
+		mov.setStatus(true);
+		
+		
+		given()
+			.header("Authorization", "JWT " + TOKEN)
+			.body(mov)
+		.when()
+			.post(APILinks.BARRIGA_REST_TRANSACOES)
+		.then()
+			.statusCode(201)
+			;
+	}
+	
+	@Test
+	public void deveValidarCamposObrigatoriosMovimentacao() {
+		given()
+			.header("Authorization", "JWT " + TOKEN)
+			.body("{}")
+		.when()
+			.post(APILinks.BARRIGA_REST_TRANSACOES)
+		.then()
+			.statusCode(400)
+			.body("$", hasSize(8))
+			.body("msg", hasItems(
+					"Data da Movimentação é obrigatório",
+					"Data do pagamento é obrigatório",
+					"Descrição é obrigatório",
+					"Interessado é obrigatório",
+					"Valor é obrigatório",
+					"Valor deve ser um número",
+					"Conta é obrigatório",
+					"Situação é obrigatório"		
+					))
+			;
 	}
 }

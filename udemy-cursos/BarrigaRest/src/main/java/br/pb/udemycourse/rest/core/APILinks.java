@@ -5,5 +5,7 @@ public class APILinks {
 	public static final String BARRIGA_REST_CONTAS = "/contas/";
 	
 	public static final String BARRIGA_REST_SIGN_IN = "/signin/";
+	
+	public static final String BARRIGA_REST_TRANSACOES = "/transacoes/";
 			
 }
