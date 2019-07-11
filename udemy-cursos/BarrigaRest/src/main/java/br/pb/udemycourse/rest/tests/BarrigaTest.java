@@ -1,18 +1,15 @@
 package br.pb.udemycourse.rest.tests;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
-
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -20,57 +17,57 @@ import org.junit.runners.MethodSorters;
 
 import br.pb.udemycourse.rest.core.APILinks;
 import br.pb.udemycourse.rest.core.BasteTest;
+import br.pb.udemycourse.rest.utils.DateUtils;
+import io.restassured.RestAssured;
+import io.restassured.specification.FilterableRequestSpecification;
 
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BarrigaTest extends BasteTest{
 	
-	private String TOKEN;
+	private static String CONTA_NAME = "Conta " + System.nanoTime();
 	
-	@Before
-	public void login() {
+	private static Integer CONTA_ID;
+	
+	private static Integer MOV_ID;
+	
+	@BeforeClass
+	public static void login() {
 		Map<String, String> login = new HashMap<String, String>();
 		login.put("email", "brunobryancarloseduardopereira@lbrazil.com.br");
 		login.put("senha", "abcd_123");
 		
-			    TOKEN = given()
+		String TOKEN = given()
 							.body(login)
 					   .when()
 					   		.post(APILinks.BARRIGA_REST_SIGN_IN)
 					   .then()
 					   		.statusCode(200)
 					   		.extract().path("token");
-	}
-	
-	@Test
-	public void t01_naoDeveAcessarAPISemToken() {
-		given()
-		.when()
-			.get(APILinks.BARRIGA_REST_CONTAS)
-		.then()
-			.statusCode(401);
+			    
+		RestAssured.requestSpecification.header("Authorization", "JWT " + TOKEN);
 	}
 	
 	@Test
 	public void t02_deveIncluirContaComSucesso() {
-		given()
-			.header("Authorization", "JWT " + TOKEN)
-			.body("{\"nome\": \"conta qualquer\"}")
-		.when()
-			.post(APILinks.BARRIGA_REST_CONTAS)
-		.then()
-			.statusCode(201);
+		CONTA_ID = given()
+						.body("{\"nome\": \""+ CONTA_NAME +"\"}")
+					.when()
+						.post(APILinks.BARRIGA_REST_CONTAS)
+					.then()
+						.statusCode(201)
+						.extract().path("id")
+						;
 	}
 	
 	@Test
 	@Ignore
 	public void deveIncluirMaisDeUmaContaComSucesso() {
 		for (int i = 0; i < 10; i++) {
-			String nomeConta = "Conta " + RandomStringUtils.randomNumeric(3);
+			//String nomeConta = "Conta " + System.nanoTime();
 			
 			given()
-				.header("Authorization", "JWT " + TOKEN)
-				.body("{\"nome\": \""+ nomeConta +"\"}")
+				.body("{\"nome\": \""+ CONTA_NAME +"\"}")
 			.when()
 				.post(APILinks.BARRIGA_REST_CONTAS)
 			.then()
@@ -83,20 +80,19 @@ public class BarrigaTest extends BasteTest{
 	@Test
 	public void t03_deveAlterarContaComSucesso() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
-			.body("{\"nome\": \"conta atualizada\"}")
+			.body("{\"nome\": \""+ CONTA_NAME +" atualizada\"}")
+			.pathParam("id", CONTA_ID)
 		.when()
-			.put(APILinks.BARRIGA_REST_CONTAS + "21849") //solicita o ID da conta alterada
+			.put(APILinks.BARRIGA_REST_CONTAS + "{id}") //solicita o ID da conta alterada
 		.then()
 			.statusCode(200)
-			.body("nome", is("conta atualizada"));
+			.body("nome", is(CONTA_NAME +" atualizada"));
 	}
 	
 	@Test
 	public void t04_naoDeveInserirContaComOMesmoNome() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
-			.body("{\"nome\": \"conta atualizada\"}")
+			.body("{\"nome\": \""+ CONTA_NAME +" atualizada\"}")
 		.when()
 			.post(APILinks.BARRIGA_REST_CONTAS)
 		.then()
@@ -108,20 +104,19 @@ public class BarrigaTest extends BasteTest{
 	public void t05_deveInserirMovimentacaoComSucesso() {
 		Movimentacao mov = getMovimentacaoValida();
 		
-		given()
-			.header("Authorization", "JWT " + TOKEN)
-			.body(mov)
-		.when()
-			.post(APILinks.BARRIGA_REST_TRANSACOES)
-		.then()
-			.statusCode(201)
-			;
+		MOV_ID = given()
+					.body(mov)
+				.when()
+					.post(APILinks.BARRIGA_REST_TRANSACOES)
+				.then()
+					.statusCode(201)
+					.extract().path("id")
+				;
 	}
 	
 	@Test
 	public void t06_deveValidarCamposObrigatoriosMovimentacao() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
 			.body("{}")
 		.when()
 			.post(APILinks.BARRIGA_REST_TRANSACOES)
@@ -145,10 +140,9 @@ public class BarrigaTest extends BasteTest{
 	public void t07_naoDeveInserirMovimentacaoComDataFutura() {
 		Movimentacao mov = getMovimentacaoValida();
 		
-		mov.setData_transacao(genDayAfterAcutalDate());
+		mov.setData_transacao(DateUtils.getDataComDiferencaDias(2));
 		
 		given()
-			.header("Authorization", "JWT " + TOKEN)
 			.body(mov)
 		.when()
 			.post(APILinks.BARRIGA_REST_TRANSACOES)
@@ -162,9 +156,9 @@ public class BarrigaTest extends BasteTest{
 	@Test
 	public void t08_naoDeveRemoverContaComMovimentacao() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
+			.pathParam("id", CONTA_ID)
 		.when()
-			.delete(APILinks.BARRIGA_REST_CONTAS + "21526")
+			.delete(APILinks.BARRIGA_REST_CONTAS + "{id}")
 		.then()
 			.statusCode(500)
 			.body("constraint", is("transacoes_conta_id_foreign"))
@@ -174,49 +168,49 @@ public class BarrigaTest extends BasteTest{
 	@Test
 	public void t09_deveCalcularSaldoContas() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
 		.when()
 			.get(APILinks.BARRIGA_REST_SALDO)
 		.then()
 			.statusCode(200)
-			.body("find{it.conta_id == 21526}.saldo", is("1100.00"))
+			.body("find{it.conta_id == "+ CONTA_ID +"}.saldo", is("100.00"))
 		;
 	}
 	
 	@Test
 	public void t10_deveDeveRemoverMovimentacao() {
 		given()
-			.header("Authorization", "JWT " + TOKEN)
+			.pathParam("id", MOV_ID)
 		.when()
-			.delete(APILinks.BARRIGA_REST_TRANSACOES + "14907")
+			.delete(APILinks.BARRIGA_REST_TRANSACOES + "{id}")
 		.then()
 			.statusCode(204)
 		;
 	}
 		
+	@Test
+	public void t11_naoDeveAcessarAPISemToken() {
+		FilterableRequestSpecification req = (FilterableRequestSpecification) RestAssured.requestSpecification;
+		req.removeHeader("Authorization");
+		
+		given()
+		.when()
+			.get(APILinks.BARRIGA_REST_CONTAS)
+		.then()
+			.statusCode(401);
+	}
+	
 	private Movimentacao getMovimentacaoValida() {
 		Movimentacao mov = new Movimentacao();
-		mov.setConta_id(21526);
+		mov.setConta_id(CONTA_ID);
 //		mov.setUsuarioId(usuarioId);
 		mov.setDescricao("Descricao da movimentacao");
 		mov.setEnvolvido("Envolvido na mov");
 		mov.setTipo("REC");
-		mov.setData_transacao("01/01/2000");
-		mov.setData_pagamento("10/05/2010");
+		mov.setData_transacao(DateUtils.getDataComDiferencaDias(-1));
+		mov.setData_pagamento(DateUtils.getDataComDiferencaDias(5));
 		mov.setValor(100f);
 		mov.setStatus(true);
 		
 		return mov;
-	}
-	
-	private static String genDayAfterAcutalDate() {
-		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		Date dateObject = new Date();
-		dateFormat.format(dateObject);
-
-		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.DATE, + 1);
-
-		return dateFormat.format(cal.getTime()).toString();
 	}
 }
