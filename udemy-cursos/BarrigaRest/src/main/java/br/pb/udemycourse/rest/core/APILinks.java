@@ -8,5 +8,7 @@ public class APILinks {
 	
 	public static final String BARRIGA_REST_TRANSACOES = "/transacoes/";
 	
-	public static final String BARRIGA_REST_SALDO = "/saldo/";			
+	public static final String BARRIGA_REST_SALDO = "/saldo/";
+	
+	public static final String BARRIGA_RESET = "/reset/";
 }
