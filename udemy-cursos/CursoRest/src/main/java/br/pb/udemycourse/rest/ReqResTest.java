@@ -4,7 +4,6 @@ import static io.restassured.RestAssured.baseURI;
 import static io.restassured.RestAssured.given;
 
 import org.hamcrest.Matchers;
-import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -12,13 +11,6 @@ import io.restassured.http.ContentType;
 
 public class ReqResTest {
 	
-	public static String jsonUsuario(String nome, String profissao) {
-		JSONObject dadosUsuario = new JSONObject();
-		dadosUsuario.put("name", nome);
-		dadosUsuario.put("job", profissao);
-		
-		return dadosUsuario.toString();
-	}
 	
 	@BeforeClass
 	public static void setup() {
@@ -27,7 +19,7 @@ public class ReqResTest {
 	
 	@Test
 	public void adicionarNovoUsuario() {
-		String novoUsuario = jsonUsuario("Johnny Marr", "Musician");
+		UserDTO novoUsuario = new UserDTO("Johnny Marr", "Musician");
 		
 		given()
 			.log().all()
@@ -38,8 +30,8 @@ public class ReqResTest {
 		.then()
 			.log().all()
 			.statusCode(201)
-			.body("name", Matchers.is("Johnny Marr"))
-			.body("job", Matchers.is("Musician"))
+			.body("name", Matchers.is(novoUsuario.getName()))
+			.body("job", Matchers.is(novoUsuario.getJob()))
 			.body("id", Matchers.notNullValue())
 			.body("createdAt", Matchers.notNullValue())
 		;
@@ -93,7 +85,7 @@ public class ReqResTest {
 	
 	@Test
 	public void atualizarUsuario() {
-		String atualizarUsuario = jsonUsuario("Morrissey", "Singer");
+		UserDTO atualizarUsuario = new UserDTO("Morrissey", "Singer");
 		
 		given()
 			.log().all()
@@ -104,8 +96,8 @@ public class ReqResTest {
 		.then()
 			.log().all()
 			.statusCode(200)
-			.body("name", Matchers.is("Morrissey"))
-			.body("job", Matchers.is("Singer"))
+			.body("name", Matchers.is(atualizarUsuario.getName()))
+			.body("job", Matchers.is(atualizarUsuario.getJob()))
 			.body("updatedAt", Matchers.notNullValue())
 		;
 	}
