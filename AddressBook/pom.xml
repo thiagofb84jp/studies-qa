@@ -25,6 +25,12 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.9</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.javafaker/javafaker -->
+		<dependency>
+			<groupId>com.github.javafaker</groupId>
+			<artifactId>javafaker</artifactId>
+			<version>0.2</version>
+		</dependency>
 	</dependencies>
 	<name>Address Book</name>
 	<description>Projeto criado para mostrar os casos de testes desenvolvidos para o cadastro de endereços</description>
